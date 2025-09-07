@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "../../../supabase";
+import React, { useState } from "react";
 import {
   FaEnvelope,
   FaLock,
@@ -37,6 +39,39 @@ const features = [
 ];
 
 const SignupPage = () => {
+  let router = useRouter();
+
+  const [emailS, setEmailS] = useState("");
+  const [passS, setpassS] = useState("");
+  const [confirmpassS, setconfirmpassS] = useState("");
+  let onsubmit = async (e) => {
+    e.preventDefault();
+
+    if (passS !== confirmpassS) {
+      alert("Passwords do not match");
+      return;
+    } else if (!emailS || !passS || !confirmpassS) {
+      alert("Please fill all the fields");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: emailS,
+        password: passS,
+      });
+
+      if (error) {
+        console.log("Signup error:", error.message);
+      } else {
+        router.push("/auth/login");
+        console.log("Signup success:", data);
+      }
+    } catch (err) {
+      console.log("Unexpected error:", err);
+    }
+  };
+
   return (
     <div className="flex justify-center flex-wrap  items-center gap-20 font-sans min-h-screen">
       {/* Left: Features */}
@@ -58,7 +93,10 @@ const SignupPage = () => {
 
       {/* Right: Form */}
       <div className="flex items-center justify-center  ">
-        <form className="border border-[#2e333e] p-8 shadow-lg w-[500px] rounded-lg space-y-4 bg-[rgb(0,0,0,0.2)]">
+        <form
+          className="border border-[#2e333e] p-8 shadow-lg w-[500px] rounded-lg space-y-4 bg-[rgb(0,0,0,0.2)]"
+          onSubmit={onsubmit}
+        >
           <h1 className="text-[40px] font-bold text-white">Sign up</h1>
 
           {/* Email */}
@@ -67,8 +105,12 @@ const SignupPage = () => {
               Email
             </label>
             <div className="relative">
-              <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
+              <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+
               <input
+                onChange={(e) => setEmailS(e.target.value)}
+                value={emailS}
+                required
                 type="email"
                 placeholder="your@gmail.com"
                 className="p-2 pl-10 border w-full border-gray-800 bg-black text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -84,6 +126,9 @@ const SignupPage = () => {
             <div className="relative">
               <FaLock className="absolute left-3 top-3 text-gray-400" />
               <input
+                onChange={(e) => setpassS(e.target.value)}
+                value={passS}
+                required
                 type="password"
                 placeholder="Create a password"
                 className="p-2 pl-10 border w-full bg-black text-white border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -99,6 +144,8 @@ const SignupPage = () => {
             <div className="relative">
               <FaLock className="absolute left-3 top-3 text-gray-400" />
               <input
+                onChange={(e) => setconfirmpassS(e.target.value)}
+                value={confirmpassS}
                 type="password"
                 placeholder="Re-enter your password"
                 className="p-2 pl-10 border w-full bg-black text-white border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -125,7 +172,7 @@ const SignupPage = () => {
 
           <p className="text-white text-center block mt-0.5 mb-0.5">
             Already have an account?{" "}
-            <a href="" className="underline font-[500]">
+            <a href="/auth/login" className="underline font-[500]">
               Sign in
             </a>
           </p>

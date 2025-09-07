@@ -1,13 +1,38 @@
 "use client";
+import { supabase } from "@/supabase";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-const Header = () => {
+const Navbar = () => {
+  let router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [Id, setId] = useState("");
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  let logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.log("");
+    } else {
+      router.push("/auth/login");
+      console.log("logout successfully");
+    }
+  };
+  useEffect(() => {
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          setId(session.user.id);
+        } else {
+          setId("");
+        }
+      }
+    );
+  }, []);
 
   return (
     <header>
@@ -40,12 +65,33 @@ const Header = () => {
         </div>
 
         <div className="flex gap-3">
-          <button className="text-white px-3 md:px-4 py-2 rounded-xl font-[400] font-sans hover:bg-white/10 transition-all duration-300">
-            Sign in
-          </button>
-          <button className="text-black bg-[#f5f6fa] px-3 md:px-4 py-2 rounded-xl font-[500] font-sans hover:bg-gray-200 transition-all duration-300 shadow-md shadow-gray-200/20 hover:shadow-amber-200/40">
-            Sign Up
-          </button>
+          {Id ? (
+            <button
+              className="text-white px-3 md:px-4 py-2 rounded-xl font-[400] font-sans hover:bg-white/10 transition-all duration-300"
+              onClick={logout}
+            >
+              Logout
+            </button>
+          ) : (
+            <button
+              className="text-white px-3 md:px-4 py-2 rounded-xl font-[400] font-sans hover:bg-white/10 transition-all duration-300"
+              onClick={() => router.push("/auth/login")}
+            >
+              Sign in
+            </button>
+          )}
+          {Id ? (
+            <button
+              className="text-black bg-[#f5f6fa] px-3 md:px-4 py-2 rounded-xl font-[500] font-sans hover:bg-gray-200 transition-all duration-300 shadow-md shadow-gray-200/20 hover:shadow-amber-200/40"
+              onClick={() => router.push("/create")}
+            >
+              Create Post
+            </button>
+          ) : (
+            <button className="text-black bg-[#f5f6fa] px-3 md:px-4 py-2 rounded-xl font-[500] font-sans hover:bg-gray-200 transition-all duration-300 shadow-md shadow-gray-200/20 hover:shadow-amber-200/40">
+              Sign up
+            </button>
+          )}
         </div>
       </div>
 
@@ -120,4 +166,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default Navbar;

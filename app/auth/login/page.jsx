@@ -1,6 +1,8 @@
 "use client";
 
-import React from "react";
+import { supabase } from "@/supabase";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 import {
   FaEnvelope,
   FaLock,
@@ -36,7 +38,28 @@ const features = [
   },
 ];
 
-const Page = () => {
+const loginpage = () => {
+  let router = useRouter();
+  const [emailL, setEmailL] = useState("");
+  const [passL, setpassL] = useState("");
+
+  let onsubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailL,
+        password: passL,
+      });
+      if (error) {
+        alert(error.message);
+      } else {
+        router.push("/home");
+      }
+    } catch (err) {
+      console.log("Unexpected error:", err);
+    }
+  };
   return (
     <div className="flex justify-center  items-center gap-20 font-sans min-h-screen">
       {/* Left: Features */}
@@ -58,7 +81,10 @@ const Page = () => {
 
       {/* Right: Form */}
       <div>
-        <form className="border border-[#2e333e] p-8 shadow-lg w-[500px] rounded-lg space-y-4 bg-[rgb(0,0,0,0.2)]">
+        <form
+          className="border border-[#2e333e] p-8 shadow-lg w-[500px] rounded-lg space-y-4 bg-[rgb(0,0,0,0.2)]"
+          onSubmit={onsubmit}
+        >
           <h1 className="text-[40px] font-bold text-white">Sign in</h1>
 
           {/* Email */}
@@ -69,6 +95,8 @@ const Page = () => {
             <div className="relative">
               <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
               <input
+                onChange={(e) => setEmailL(e.target.value)}
+                value={emailL}
                 type="email"
                 placeholder="your@gmail.com"
                 className="p-2 pl-10 border w-full border-gray-800 bg-black text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -87,6 +115,8 @@ const Page = () => {
             <div className="relative">
               <FaLock className="absolute left-3 top-3 text-gray-400" />
               <input
+                onChange={(e) => setpassL(e.target.value)}
+                value={passL}
                 type="password"
                 placeholder="••••••••"
                 className="p-2 pl-10 border w-full bg-black text-white border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -112,7 +142,7 @@ const Page = () => {
 
           <p className="text-white text-center block mt-0.5 mb-0.5">
             Don't have an account?{" "}
-            <a href="" className="underline font-[500]">
+            <a href="/auth/signup" className="underline font-[500]">
               Signup
             </a>
           </p>
@@ -147,4 +177,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default loginpage;
