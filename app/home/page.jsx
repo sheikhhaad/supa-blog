@@ -1,8 +1,26 @@
+"use client";
 import Navbar from "@/Component/Headers";
 import HomeCard from "@/Component/HomeCard";
-import React from "react";
+import { supabase } from "@/supabase";
+import React, { useEffect, useState } from "react";
 
-const page = () => {
+const Page = () => {
+  const [FetchData, setFetchData] = useState([]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const { data, error } = await supabase.from("BlogPosts").select("*");
+      if (error) {
+        console.error("Error fetching posts:", error.message);
+      } else {
+        setFetchData(data);
+        console.log(data);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
   return (
     <>
       <Navbar />
@@ -13,11 +31,20 @@ const page = () => {
         </p>
       </div>
 
-      <div>
-        <HomeCard/>
+      <div className="mt-10 flex flex-wrap gap-6">
+        {FetchData.map((itm, indx) => (
+          <div key={indx}>
+            <HomeCard
+              title={itm.title}
+              description={itm.description}
+              img={itm.image}
+              date={itm.date}
+            />
+          </div>
+        ))}
       </div>
     </>
   );
 };
 
-export default page;
+export default Page;
