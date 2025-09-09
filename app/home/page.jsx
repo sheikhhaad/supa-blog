@@ -6,6 +6,31 @@ import React, { useEffect, useState } from "react";
 
 const Page = () => {
   const [FetchData, setFetchData] = useState([]);
+  const [Id, setId] = useState("");
+
+  useEffect(() => {
+     const { data: subscription } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          setId(session.user.id);
+        } else {
+          setId("");
+        }
+      }
+    );
+  })
+
+  useEffect(()=>{
+    let fetchUser = async()=>{
+        const { data, error } = await supabase.from("signData").select("*");
+      if (error) {
+        console.error("Error fetching posts:", error.message);
+      } else {
+        setFetchData(data);
+        console.log(data);
+      }
+    }
+  })
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -31,7 +56,7 @@ const Page = () => {
         </p>
       </div>
 
-      <div className="mt-10 flex flex-wrap gap-6">
+      <div className="mt-10 flex flex-wrap gap-6 m-30">
         {FetchData.map((itm, indx) => (
           <div key={indx}>
             <HomeCard
@@ -39,7 +64,9 @@ const Page = () => {
               description={itm.description}
               img={itm.image}
               date={itm.date}
+              id={Id}
             />
+
           </div>
         ))}
       </div>

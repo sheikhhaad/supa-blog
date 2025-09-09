@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import HomeCard from "../../Component/HomeCard";
 import { supabase } from "@/supabase";
@@ -82,10 +82,25 @@ const ImageUploadPage = () => {
     }
     // Reset form
   };
+useEffect(() => {
+    const fetchId = async () => {
+      const { data, error } = await supabase
+        .from("signData")
+        .select("*");
+
+      if (error) {
+        console.error("Error fetching data:", error);
+      } else {
+        console.log("Data:", data);
+      }
+    };
+
+    fetchId();
+  }, []); 
 
   return (
     <>
-    <Navbar/>
+      <Navbar />
       <div className="min-h-screen py-8 px-4">
         <div className="max-w-2xl bg-[rgb(0,0,0,0.4)] mx-auto border border-[#2e333e] rounded-xl shadow-lg overflow-hidden  ">
           <div className="p-8">

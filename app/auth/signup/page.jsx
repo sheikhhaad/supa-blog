@@ -42,6 +42,7 @@ const SignupPage = () => {
   let router = useRouter();
 
   const [emailS, setEmailS] = useState("");
+  const [NameS, setNameS] = useState("");
   const [passS, setpassS] = useState("");
   const [confirmpassS, setconfirmpassS] = useState("");
   let onsubmit = async (e) => {
@@ -50,22 +51,43 @@ const SignupPage = () => {
     if (passS !== confirmpassS) {
       alert("Passwords do not match");
       return;
-    } else if (!emailS || !passS || !confirmpassS) {
+    } else if (!emailS || !passS || !confirmpassS || !NameS) {
       alert("Please fill all the fields");
       return;
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: emailS,
-        password: passS,
-      });
+      const { data: signUpData, error: signUpError } =
+        await supabase.auth.signUp({
+          email: emailS,
+          password: passS,
+        });
 
-      if (error) {
-        console.log("Signup error:", error.message);
-      } else {
+      if (signUpError) {
+        console.log("Signup error:", signUpError.message);
+        return;
+      }
+
+      const userId = signUpData?.user?.id;
+
+      if (userId) {
+        const signData = {
+          userid: userId,
+          username: NameS,
+        };
+
+        const { data: insertData, error: insertError } = await supabase
+          .from("signData") // Table name
+          .insert(signData);
+
+        if (insertError) {
+          console.error("Error inserting user data:", insertError.message);
+        } else {
+          console.log("User data inserted successfully:", insertData);
+        }
+
+        // Redirect to login page
         router.push("/auth/login");
-        console.log("Signup success:", data);
       }
     } catch (err) {
       console.log("Unexpected error:", err);
@@ -98,6 +120,25 @@ const SignupPage = () => {
           onSubmit={onsubmit}
         >
           <h1 className="text-[40px] font-bold text-white">Sign up</h1>
+
+          {/* Name */}
+          <div>
+            <label className="block mb-2 text-sm font-medium text-[#94a0b8]">
+              Username
+            </label>
+            <div className="relative">
+              <FaUsers className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+
+              <input
+                onChange={(e) => setNameS(e.target.value)}
+                value={NameS}
+                required
+                type=""
+                placeholder="Enter your username"
+                className="p-2 pl-10 border w-full border-gray-800 bg-black text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+              />
+            </div>
+          </div>
 
           {/* Email */}
           <div>
