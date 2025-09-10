@@ -5,42 +5,53 @@ import { supabase } from "@/supabase";
 import React, { useEffect, useState } from "react";
 
 const Page = () => {
-  const [FetchData, setFetchData] = useState([]);
-  const [Id, setId] = useState("");
+  const [blogPosts, setBlogPosts] = useState([]);
+  const [userData, setUserData] = useState([]);
+  const [userId, setUserId] = useState("");
 
+  // Track auth state
   useEffect(() => {
-     const { data: subscription } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
         if (session) {
-          setId(session.user.id);
+          setUserId(session.user.id);
         } else {
-          setId("");
+          setUserId("");
         }
       }
     );
-  })
 
-  useEffect(()=>{
-    let fetchUser = async()=>{
-        const { data, error } = await supabase.from("signData").select("*");
+    return () => {
+      subscription?.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Fetch user data
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error } = await supabase.from("signData").select("*");
       if (error) {
-        console.error("Error fetching posts:", error.message);
+        console.error("Error fetching user data:", error.message);
       } else {
-        setFetchData(data);
-        console.log(data);
+        setUserData(data);
       }
-    }
-  })
+    };
 
+    fetchUser();
+  }, []);
+
+  // Fetch blog posts
   useEffect(() => {
     const fetchPosts = async () => {
       const { data, error } = await supabase.from("BlogPosts").select("*");
       if (error) {
-        console.error("Error fetching posts:", error.message);
+        console.error("Error fetching blog posts:", error.message);
       } else {
-        setFetchData(data);
+        setBlogPosts(data);
         console.log(data);
+        
       }
+
     };
 
     fetchPosts();
@@ -57,16 +68,15 @@ const Page = () => {
       </div>
 
       <div className="mt-10 flex flex-wrap gap-6 m-30">
-        {FetchData.map((itm, indx) => (
+        {blogPosts.map((itm, indx) => (
           <div key={indx}>
             <HomeCard
               title={itm.title}
               description={itm.description}
               img={itm.image}
               date={itm.date}
-              id={Id}
+              id={itm.id}
             />
-
           </div>
         ))}
       </div>

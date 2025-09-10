@@ -1,9 +1,8 @@
 "use client";
 import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
-import HomeCard from "../../Component/HomeCard";
-import { supabase } from "@/supabase";
 import Navbar from "@/Component/Headers";
+import { supabase } from "@/supabase";
 
 const ImageUploadPage = () => {
   const [title, setTitle] = useState("");
@@ -11,11 +10,11 @@ const ImageUploadPage = () => {
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [posts, setPosts] = useState([]);
   const fileInputRef = useRef(null);
 
-  // Store multiple posts
-  const [posts, setPosts] = useState([]);
-
+  // Drag & Drop
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -42,6 +41,7 @@ const ImageUploadPage = () => {
     }
   }, []);
 
+  // File input select
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
@@ -50,6 +50,7 @@ const ImageUploadPage = () => {
     }
   };
 
+  // Remove image
   const handleRemoveImage = () => {
     setImage(null);
     setPreview(null);
@@ -58,21 +59,22 @@ const ImageUploadPage = () => {
     }
   };
 
+  // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const newPost = {
       title,
       description,
-      // image: imageUrl,
+      Id: userId,
       date: new Date().toLocaleDateString(),
     };
 
     const { data, error } = await supabase.from("BlogPosts").insert(newPost);
 
     if (error) {
-      console.log("Insert error:", error);
+      console.error("Insert error:", error.message);
     } else {
-      console.log("Post added:", data);
       setPosts((prev) => [...prev, newPost]);
       setTitle("");
       setDescription("");
@@ -80,29 +82,27 @@ const ImageUploadPage = () => {
       setPreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
-    // Reset form
   };
-useEffect(() => {
-    const fetchId = async () => {
-      const { data, error } = await supabase
-        .from("signData")
-        .select("*");
 
+  // Fetch userId
+  useEffect(() => {
+    const fetchId = async () => {
+      const { data, error } = await supabase.from("signData").select("userid");
       if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        console.log("Data:", data);
+        console.error("Error fetching user id:", error.message);
+      } else if (data && data.length > 0) {
+        setUserId(data[0].userid);
       }
     };
 
     fetchId();
-  }, []); 
+  }, []);
 
   return (
     <>
       <Navbar />
       <div className="min-h-screen py-8 px-4">
-        <div className="max-w-2xl bg-[rgb(0,0,0,0.4)] mx-auto border border-[#2e333e] rounded-xl shadow-lg overflow-hidden  ">
+        <div className="max-w-2xl mx-auto bg-[rgb(0,0,0,0.4)] border border-[#2e333e] rounded-xl shadow-lg overflow-hidden">
           <div className="p-8">
             <h1 className="text-3xl font-sans font-bold text-[#94a0b8] mb-2">
               Create Blog Post
@@ -134,7 +134,7 @@ useEffect(() => {
               <div className="mb-6">
                 <label
                   htmlFor="description"
-                  className="block font-sans text-sm font-medium text-[#94a0b8] mb-1"
+                  className="block text-sm font-medium text-[#94a0b8] mb-1"
                 >
                   Description
                 </label>
@@ -150,12 +150,12 @@ useEffect(() => {
 
               {/* Image Upload */}
               <div className="mb-6">
-                <label className="block font-sans text-sm font-medium text-[#94a0b8] mb-1">
+                <label className="block text-sm font-medium text-[#94a0b8] mb-1">
                   Image
                 </label>
 
                 <div
-                  className={`border-2 font-sans border-dashed rounded-lg p-8 text-center cursor-pointer transition-all
+                  className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all
                   ${
                     isDragging
                       ? "border-indigo-500 bg-indigo-50"
@@ -200,9 +200,7 @@ useEffect(() => {
                       <p className="text-gray-700 font-medium">
                         Drag and drop an image here
                       </p>
-                      <p className="text-gray-500 text-sm">
-                        or click to browse
-                      </p>
+                      <p className="text-gray-500 text-sm">or click to browse</p>
                     </div>
                   )}
                 </div>
@@ -212,14 +210,14 @@ useEffect(() => {
               <div className="flex justify-end space-x-4">
                 <button
                   type="button"
-                  className="px-6 py-3 border border-gray-800 font-sans rounded-lg text-[#94a0b8] hover:bg-white  transition"
+                  className="px-6 py-3 border border-gray-800 font-sans rounded-lg text-[#94a0b8] hover:bg-white transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-6 py-3 bg-indigo-600 font-sans text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
-                  // disabled={!title || !description || !image}
+                  disabled={!title || !description}
                 >
                   Create Post
                 </button>

@@ -8,13 +8,13 @@ import {
   FaLock,
   FaGoogle,
   FaFacebook,
-  FaGithub,
   FaEdit,
   FaUsers,
   FaSearch,
   FaShareAlt,
 } from "react-icons/fa";
 
+// Feature list
 const features = [
   {
     title: "Easy Publishing",
@@ -38,16 +38,15 @@ const features = [
   },
 ];
 
-const loginpage = () => {
-  let router = useRouter();
+const LoginPage = () => {
+  const router = useRouter();
   const [emailL, setEmailL] = useState("");
-  const [passL, setpassL] = useState("");
+  const [passL, setPassL] = useState("");
 
-  let onsubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: emailL,
         password: passL,
       });
@@ -57,11 +56,12 @@ const loginpage = () => {
         router.push("/home");
       }
     } catch (err) {
-      console.log("Unexpected error:", err);
+      console.error("Unexpected error:", err);
     }
   };
+
   return (
-    <div className="flex justify-center  items-center gap-20 font-sans min-h-screen">
+    <div className="flex justify-center items-center gap-20 font-sans min-h-screen">
       {/* Left: Features */}
       <div>
         {features.map((item, i) => (
@@ -79,11 +79,11 @@ const loginpage = () => {
         ))}
       </div>
 
-      {/* Right: Form */}
+      {/* Right: Login Form */}
       <div>
         <form
+          onSubmit={handleSubmit}
           className="border border-[#2e333e] p-8 shadow-lg w-[500px] rounded-lg space-y-4 bg-[rgb(0,0,0,0.2)]"
-          onSubmit={onsubmit}
         >
           <h1 className="text-[40px] font-bold text-white">Sign in</h1>
 
@@ -106,16 +106,16 @@ const loginpage = () => {
 
           {/* Password */}
           <div>
-            <label className=" mb-2 text-sm flex justify-between font-medium text-[#94a0b8]">
+            <label className="mb-2 text-sm flex justify-between font-medium text-[#94a0b8]">
               Password
-              <a href="#" className="text-white underline text-end block">
+              <a href="#" className="text-white underline">
                 Forgot password?
               </a>
             </label>
             <div className="relative">
               <FaLock className="absolute left-3 top-3 text-gray-400" />
               <input
-                onChange={(e) => setpassL(e.target.value)}
+                onChange={(e) => setPassL(e.target.value)}
                 value={passL}
                 type="password"
                 placeholder="••••••••"
@@ -140,7 +140,8 @@ const loginpage = () => {
             Sign in
           </button>
 
-          <p className="text-white text-center block mt-0.5 mb-0.5">
+          {/* Signup redirect */}
+          <p className="text-white text-center mt-2">
             Don't have an account?{" "}
             <a href="/auth/signup" className="underline font-[500]">
               Signup
@@ -177,4 +178,4 @@ const loginpage = () => {
   );
 };
 
-export default loginpage;
+export default LoginPage;
